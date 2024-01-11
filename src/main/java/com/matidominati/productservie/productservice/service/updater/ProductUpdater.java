@@ -38,7 +38,7 @@ public class ProductUpdater {
         computer.setProductType(processorType);
     }
 
-    private static void updateSmartphoneSpecificFields(SmartphoneEntity smartphone, String color, int batteryCapacity, Set<Accessory accessories>) {
+    private static void updateSmartphoneSpecificFields(SmartphoneEntity smartphone, String color, int batteryCapacity, Set<Accessory> accessories) {
         smartphone.setColor(color);
         smartphone.setBatteryCapacity(batteryCapacity);
         smartphone.setAccessories(accessories);
