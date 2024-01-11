@@ -1,9 +1,13 @@
 package com.matidominati.productservie.productservice.service;
 
-import com.matidominati.productservie.productservice.mapper.ProductMapper;
-import com.matidominati.productservie.productservice.model.ProductDTO;
-import com.matidominati.productservie.productservice.model.ProductEntity;
+import com.matidominati.productservie.productservice.mapper.ProductTOMapper;
+import com.matidominati.productservie.productservice.mapper.ProductTOUpdateMapper;
+import com.matidominati.productservie.productservice.model.ProductTO;
+import com.matidominati.productservie.productservice.model.entity.ComputerEntity;
+import com.matidominati.productservie.productservice.model.entity.ProductEntity;
+import com.matidominati.productservie.productservice.model.entity.SmartphoneEntity;
 import com.matidominati.productservie.productservice.repository.ProductRepository;
+import com.matidominati.productservie.productservice.service.updater.ProductUpdater;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,46 +21,65 @@ import java.util.Optional;
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
-    private final ProductMapper mapper;
+    private final ProductTOMapper mapper;
+    private final ProductTOUpdateMapper updateMapper;
 
-    public List<ProductDTO> getAllProducts() {
+    public List<ProductTO> getAll() {
         log.info("Search process for all products has started");
-        List<ProductDTO> products = productRepository.findAll().stream()
-                .map(mapper::productToDTO)
+        List<ProductTO> products = productRepository.findAll().stream()
+                .map(mapper::map)
                 .toList();
         log.info("{} products found", products.size());
         return products;
     }
 
-    public ProductDTO getProductByType(String productType) {
+    public List<ProductTO> getByType(String productType) {
         log.info("Process of searching for a products: {} has started", productType);
-        ProductEntity product = productRepository.findByType(productType)
-                .orElseThrow(() -> new RuntimeException("Product of a given type does not exist."));
-        return mapper.productToDTO(product);
+        List<ProductTO> products = productRepository.findByType(productType).stream()
+                .map(mapper::map)
+                .toList();
+        log.info("{} products found", products.size());
+        return products;
     }
 
     @Transactional
-    public ProductDTO createProduct(ProductDTO createdProduct) {
-        ProductEntity product = null;
+    public ProductTO create(ProductTO productTO) {
+        ProductEntity product = mapper.map(productTO);
         productRepository.save(product);
-        return mapper.productToDTO(product);
+        log.info("New {} with ID: {} has been created.", product.getProductType(), product.getId());
+        return mapper.map(product);
     }
 
     @Transactional
-    public void deleteProduct(Long id) {
+    public void delete(Long id) {
         Optional<ProductEntity> productToDelete = productRepository.findById(id);
         if (productToDelete.isEmpty()) {
             throw new RuntimeException("Product with given ID does not exist.");
         }
         productRepository.delete(productToDelete.get());
+        log.info("{} with ID: {} has ben deleted.", productToDelete.get().getProductType(), id);
     }
 
     @Transactional
-    public ProductDTO updateProduct(Long id, ProductDTO updatedProduct) {
+    public ProductTO update(Long id, ProductTO updatedProduct) {
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product with the provided ID does not exist."));
+
+        if (product instanceof ComputerEntity) {
+            log.info("Updating computer with ID: {}", id);
+            ProductUpdater.updateComputer((ComputerEntity) product, updatedProduct.getProductName(), updatedProduct.getProductType(),
+                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getProcessorType(), updatedProduct.getMemory());
+        }
+        if (product instanceof SmartphoneEntity) {
+            log.info("Updating smartphone with ID: {}", id);
+            ProductUpdater.updateSmartphone((SmartphoneEntity) product, updatedProduct.getProductName(), updatedProduct.getProductType(),
+                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getColor(), updatedProduct.getBatteryCapacity(), updatedProduct.getAccessories());
+        }
+        log.info("Updating product with ID: {}", id);
+        ProductUpdater.updateProduct(product, updatedProduct.getProductName(), updatedProduct.getProductType(),
+                updatedProduct.getProductDescription(), updatedProduct.getPrice());
         productRepository.save(product);
         log.info("Product data has been updated.");
-        return mapper.productToDTO(product);
+        return mapper.map(product);
     }
 }
