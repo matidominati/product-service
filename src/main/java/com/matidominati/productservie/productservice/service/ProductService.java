@@ -77,12 +77,12 @@ public class ProductService {
         if (product instanceof ComputerEntity) {
             log.info("Updating computer with ID: {}", id);
             ProductUpdater.updateComputer((ComputerEntity) product, updatedProduct.getProductName(), updatedProduct.getProductType(),
-                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getProcessorType(), updatedProduct.getMemory());
+                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getComputerConfiguration());
         }
         if (product instanceof SmartphoneEntity) {
             log.info("Updating smartphone with ID: {}", id);
             ProductUpdater.updateSmartphone((SmartphoneEntity) product, updatedProduct.getProductName(), updatedProduct.getProductType(),
-                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getColor(), updatedProduct.getBatteryCapacity(), updatedProduct.getAccessories());
+                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getSmartphoneConfiguration());
         }
         log.info("Updating product with ID: {}", id);
         ProductUpdater.updateProduct(product, updatedProduct.getProductName(), updatedProduct.getProductType(),

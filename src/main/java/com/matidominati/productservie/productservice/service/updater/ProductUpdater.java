@@ -1,6 +1,8 @@
 package com.matidominati.productservie.productservice.service.updater;
 
 import com.matidominati.productservie.productservice.model.configuration.Accessory;
+import com.matidominati.productservie.productservice.model.configuration.ComputerConfiguration;
+import com.matidominati.productservie.productservice.model.configuration.SmartphoneConfiguration;
 import com.matidominati.productservie.productservice.model.entity.ComputerEntity;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.model.entity.SmartphoneEntity;
@@ -22,25 +24,22 @@ public class ProductUpdater {
     }
 
     public static void updateComputer(ComputerEntity computer, String productName, String productType,
-                                      String productDescription, BigDecimal price, String processorType, int memory) {
+                                      String productDescription, BigDecimal price, Set<ComputerConfiguration> configurations) {
         updateProduct(computer, productName, productType, productDescription, price);
-        updateComputerSpecificFields(computer, processorType, memory);
+        updateComputerConfiguration(computer, configurations);
     }
 
     public static void updateSmartphone(SmartphoneEntity smartphone, String productName, String productType,
-                                        String productDescription, BigDecimal price, String color, int batteryCapacity, Set<Accessory> accessories) {
+                                        String productDescription, BigDecimal price, Set<SmartphoneConfiguration> configurations) {
         updateProduct(smartphone, productName, productType, productDescription, price);
-        updateSmartphoneSpecificFields(smartphone, color, batteryCapacity, accessories);
+        updateSmartphoneConfiguration(smartphone, configurations);
     }
 
-    private static void updateComputerSpecificFields(ComputerEntity computer, String processorType, int memory) {
-        computer.setMemory(memory);
-        computer.setProductType(processorType);
+    private static void updateComputerConfiguration(ComputerEntity computer, Set<ComputerConfiguration> configurations) {
+        computer.setConfigurations(configurations);
     }
 
-    private static void updateSmartphoneSpecificFields(SmartphoneEntity smartphone, String color, int batteryCapacity, Set<Accessory> accessories) {
-        smartphone.setColor(color);
-        smartphone.setBatteryCapacity(batteryCapacity);
-        smartphone.setAccessories(accessories);
+    private static void updateSmartphoneConfiguration(SmartphoneEntity smartphone, Set<SmartphoneConfiguration> configurations) {
+       smartphone.setConfigurations(configurations);
     }
 }
