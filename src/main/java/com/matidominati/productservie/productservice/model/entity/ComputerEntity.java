@@ -1,8 +1,10 @@
 package com.matidominati.productservie.productservice.model.entity;
 
+import com.matidominati.productservie.productservice.model.configuration.ComputerConfiguration;
 import jakarta.persistence.Entity;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
+
+import java.util.Set;
 
 @Entity
 @Getter
@@ -11,7 +13,5 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @Builder
 public class ComputerEntity extends ProductEntity {
-    private String processorType;
-    private int memory;
-
+    private Set<ComputerConfiguration> configurations;
 }

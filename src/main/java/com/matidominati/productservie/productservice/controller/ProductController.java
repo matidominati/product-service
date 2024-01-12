@@ -20,9 +20,15 @@ public class ProductController {
     }
 
     @GetMapping("/type/{productType}")
-    public List<ProductTO> getProductsByType(@PathVariable String productType) {
+    public List<ProductTO> getByType(@PathVariable String productType) {
         return productService.getByType(productType);
     }
+
+    @GetMapping("/{id}")
+    public ProductTO getById(@PathVariable Long id) {
+        return productService.getById(id);
+    }
+
 
     @PostMapping("/create")
     public void create(@RequestBody ProductTO product) {
@@ -38,5 +44,4 @@ public class ProductController {
     public void update(@PathVariable Long productId, @RequestBody ProductTO product) {
         productService.update(productId, product);
     }
-
 }

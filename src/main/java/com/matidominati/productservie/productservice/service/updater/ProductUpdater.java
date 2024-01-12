@@ -1,6 +1,6 @@
 package com.matidominati.productservie.productservice.service.updater;
 
-import com.matidominati.productservie.productservice.model.Accessory;
+import com.matidominati.productservie.productservice.model.configuration.Accessory;
 import com.matidominati.productservie.productservice.model.entity.ComputerEntity;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.model.entity.SmartphoneEntity;

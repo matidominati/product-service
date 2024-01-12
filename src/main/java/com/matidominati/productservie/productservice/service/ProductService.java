@@ -34,6 +34,14 @@ public class ProductService {
         return products;
     }
 
+    public ProductTO getById(Long id) {
+        log.info("Search process for product with ID: {} has started", id);
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Product not found"));
+        log.info("Product with ID: {} not found", id);
+        return mapper.map(product);
+    }
+
     public List<ProductTO> getByType(String productType) {
         log.info("Process of searching for a products: {} has started", productType);
         List<ProductTO> products = productRepository.findByType(productType).stream()

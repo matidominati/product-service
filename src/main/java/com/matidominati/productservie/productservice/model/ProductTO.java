@@ -2,8 +2,8 @@ package com.matidominati.productservie.productservice.model;
 
 import lombok.Data;
 
+import java.lang.module.Configuration;
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Data
 public class ProductTO {
@@ -12,9 +12,5 @@ public class ProductTO {
     private String productType;
     private String productDescription;
     private BigDecimal price;
-    private String color;
-    private int batteryCapacity;
-    private Set<Accessory> accessories;
-    private String processorType;
-    private int memory;
+    private Configuration configuration;
 }

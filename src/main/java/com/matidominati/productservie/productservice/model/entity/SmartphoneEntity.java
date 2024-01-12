@@ -1,9 +1,8 @@
 package com.matidominati.productservie.productservice.model.entity;
 
-import com.matidominati.productservie.productservice.model.Accessory;
+import com.matidominati.productservie.productservice.model.configuration.SmartphoneConfiguration;
 import jakarta.persistence.Entity;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
 
@@ -14,7 +13,5 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class SmartphoneEntity extends ProductEntity {
-    private String color;
-    private int batteryCapacity;
-    private Set<Accessory> accessories;
+    private Set<SmartphoneConfiguration> configurations;
 }
