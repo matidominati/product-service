@@ -19,5 +19,4 @@ public class Accessory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String accessoryType;
-
 }

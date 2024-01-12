@@ -1,5 +1,6 @@
 package com.matidominati.productservie.productservice.service;
 
+import com.matidominati.productservie.productservice.exception.DataNotFoundException;
 import com.matidominati.productservie.productservice.mapper.ProductTOMapper;
 import com.matidominati.productservie.productservice.mapper.ProductTOUpdateMapper;
 import com.matidominati.productservie.productservice.model.ProductTO;
@@ -54,7 +55,7 @@ public class ProductService {
     public void delete(Long id) {
         Optional<ProductEntity> productToDelete = productRepository.findById(id);
         if (productToDelete.isEmpty()) {
-            throw new RuntimeException("Product with given ID does not exist.");
+            throw new DataNotFoundException("Product with given ID does not exist.");
         }
         productRepository.delete(productToDelete.get());
         log.info("{} with ID: {} has ben deleted.", productToDelete.get().getProductType(), id);
@@ -63,7 +64,7 @@ public class ProductService {
     @Transactional
     public ProductTO update(Long id, ProductTO updatedProduct) {
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product with the provided ID does not exist."));
+                .orElseThrow(() -> new DataNotFoundException("Product with the provided ID does not exist."));
 
         if (product instanceof ComputerEntity) {
             log.info("Updating computer with ID: {}", id);
