@@ -4,9 +4,7 @@ import com.matidominati.productservie.productservice.exception.DataNotFoundExcep
 import com.matidominati.productservie.productservice.mapper.ProductTOMapper;
 import com.matidominati.productservie.productservice.mapper.ProductTOUpdateMapper;
 import com.matidominati.productservie.productservice.model.ProductTO;
-import com.matidominati.productservie.productservice.model.entity.ComputerEntity;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
-import com.matidominati.productservie.productservice.model.entity.SmartphoneEntity;
 import com.matidominati.productservie.productservice.repository.ProductRepository;
 import com.matidominati.productservie.productservice.service.updater.ProductUpdater;
 import jakarta.transaction.Transactional;

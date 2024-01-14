@@ -29,7 +29,7 @@ public class ProductController {
         return productService.getById(id);
     }
 
-    @GetMapping
+    @GetMapping("/types")
     public List<String> getAllTypes() {
         return productService.getAvailableTypes();
     }

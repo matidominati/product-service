@@ -16,5 +16,4 @@ public class ProductTO {
     private BigDecimal basePrice;
     private Map<String, ProductAccessory> accessories;
     private Map<String, ProductConfiguration> configurations;
-
 }
