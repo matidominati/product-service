@@ -1,11 +1,11 @@
 package com.matidominati.productservie.productservice.model;
 
-import com.matidominati.productservie.productservice.model.configuration.ComputerConfiguration;
-import com.matidominati.productservie.productservice.model.configuration.SmartphoneConfiguration;
+import com.matidominati.productservie.productservice.model.configuration.ProductAccessory;
+import com.matidominati.productservie.productservice.model.configuration.ProductConfiguration;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Set;
+import java.util.Map;
 
 @Data
 public class ProductTO {
@@ -13,7 +13,8 @@ public class ProductTO {
     private String productName;
     private String productType;
     private String productDescription;
-    private BigDecimal price;
-    private Set<ComputerConfiguration> computerConfiguration;
-    private Set<SmartphoneConfiguration> smartphoneConfiguration;
+    private BigDecimal basePrice;
+    private Map<String, ProductAccessory> accessories;
+    private Map<String, ProductConfiguration> configurations;
+
 }

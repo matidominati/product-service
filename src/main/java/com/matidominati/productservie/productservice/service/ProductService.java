@@ -51,6 +51,10 @@ public class ProductService {
         return products;
     }
 
+    public List<String> getAvailableTypes(){
+        return productRepository.findByType();
+    }
+
     @Transactional
     public ProductTO create(ProductTO productTO) {
         ProductEntity product = mapper.map(productTO);
@@ -73,20 +77,9 @@ public class ProductService {
     public ProductTO update(Long id, ProductTO updatedProduct) {
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Product with the provided ID does not exist."));
-
-        if (product instanceof ComputerEntity) {
-            log.info("Updating computer with ID: {}", id);
-            ProductUpdater.updateComputer((ComputerEntity) product, updatedProduct.getProductName(), updatedProduct.getProductType(),
-                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getComputerConfiguration());
-        }
-        if (product instanceof SmartphoneEntity) {
-            log.info("Updating smartphone with ID: {}", id);
-            ProductUpdater.updateSmartphone((SmartphoneEntity) product, updatedProduct.getProductName(), updatedProduct.getProductType(),
-                    updatedProduct.getProductDescription(), updatedProduct.getPrice(), updatedProduct.getSmartphoneConfiguration());
-        }
         log.info("Updating product with ID: {}", id);
         ProductUpdater.updateProduct(product, updatedProduct.getProductName(), updatedProduct.getProductType(),
-                updatedProduct.getProductDescription(), updatedProduct.getPrice());
+                updatedProduct.getProductDescription(), updatedProduct.getBasePrice());
         productRepository.save(product);
         log.info("Product data has been updated.");
         return mapper.map(product);

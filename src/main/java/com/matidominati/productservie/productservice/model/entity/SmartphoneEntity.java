@@ -1,6 +1,5 @@
 package com.matidominati.productservie.productservice.model.entity;
 
-import com.matidominati.productservie.productservice.model.configuration.SmartphoneConfiguration;
 import jakarta.persistence.Entity;
 import lombok.*;
 

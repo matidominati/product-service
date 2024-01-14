@@ -1,5 +1,7 @@
 package com.matidominati.productservie.productservice.model.entity;
 
+import com.matidominati.productservie.productservice.model.configuration.ProductAccessory;
+import com.matidominati.productservie.productservice.model.configuration.ProductConfiguration;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,6 +9,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Objects;
 
 @Entity
@@ -23,7 +26,9 @@ public class ProductEntity {
     private String productName;
     private String productType;
     private String productDescription;
-    private BigDecimal price;
+    private BigDecimal basePrice;
+    private Map<String, ProductConfiguration> configurations;
+    private Map<String, ProductAccessory> accessories;
 
     @Override
     public boolean equals(Object o) {

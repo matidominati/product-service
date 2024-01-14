@@ -29,6 +29,10 @@ public class ProductController {
         return productService.getById(id);
     }
 
+    @GetMapping
+    public List<String> getAllTypes() {
+        return productService.getAvailableTypes();
+    }
 
     @PostMapping("/create")
     public void create(@RequestBody ProductTO product) {
@@ -40,7 +44,7 @@ public class ProductController {
         productService.delete(productId);
     }
 
-    @PostMapping("/update/{productId}")
+    @PutMapping("/update/{productId}")
     public void update(@PathVariable Long productId, @RequestBody ProductTO product) {
         productService.update(productId, product);
     }

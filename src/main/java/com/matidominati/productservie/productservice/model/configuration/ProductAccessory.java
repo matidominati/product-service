@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Accessory {
-    private String accessoryType;
+public class ProductAccessory {
+    private String accessoryKey;
     private String accessoryName;
-    private BigDecimal price;
+    private BigDecimal accessoryPrice;
 }
