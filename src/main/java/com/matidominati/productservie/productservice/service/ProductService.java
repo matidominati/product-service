@@ -2,7 +2,6 @@ package com.matidominati.productservie.productservice.service;
 
 import com.matidominati.productservie.productservice.exception.DataNotFoundException;
 import com.matidominati.productservie.productservice.mapper.ProductTOMapper;
-import com.matidominati.productservie.productservice.mapper.ProductTOUpdateMapper;
 import com.matidominati.productservie.productservice.model.ProductTO;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.repository.ProductRepository;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +21,6 @@ import java.util.Optional;
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductTOMapper mapper;
-    private final ProductTOUpdateMapper updateMapper;
 
     public List<ProductTO> getAll() {
         log.info("Search process for all products has started");
@@ -36,21 +35,28 @@ public class ProductService {
         log.info("Search process for product with ID: {} has started", id);
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Product not found"));
-        log.info("Product with ID: {} not found", id);
+        log.info("Product with ID: {} found", id);
         return mapper.map(product);
     }
 
     public List<ProductTO> getByType(String productType) {
         log.info("Process of searching for a products: {} has started", productType);
-        List<ProductTO> products = productRepository.findByType(productType).stream()
+        List<ProductTO> products = productRepository.findByProductType(productType).stream()
                 .map(mapper::map)
                 .toList();
         log.info("{} products found", products.size());
         return products;
     }
 
-    public List<String> getAvailableTypes(){
-        return productRepository.findByType();
+    public List<String> getAvailableTypes() {
+        log.info("Fetching available product types");
+        List<String> availableTypes = productRepository.findAll()
+                .stream()
+                .map(productEntity -> productEntity.getProductType())
+                .distinct()
+                .collect(Collectors.toList());
+        log.info("{} product types found", availableTypes.size());
+        return availableTypes;
     }
 
     @Transactional

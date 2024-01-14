@@ -1,12 +1,9 @@
 package com.matidominati.productservie.productservice.model.entity;
 
-import com.matidominati.productservie.productservice.model.configuration.ProductAccessory;
 import com.matidominati.productservie.productservice.model.configuration.ProductConfiguration;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import com.matidominati.productservie.productservice.model.configuration.ProductAccessory;
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -23,11 +20,20 @@ public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String productName;
     private String productType;
     private String productDescription;
     private BigDecimal basePrice;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "product_id")
+    @MapKeyColumn(name = "configuration_key")
     private Map<String, ProductConfiguration> configurations;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "product_id")
+    @MapKeyColumn(name = "accessory_key")
     private Map<String, ProductAccessory> accessories;
 
     @Override

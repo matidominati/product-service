@@ -7,6 +7,5 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
-    Optional<ProductEntity> findByType(String productType);
-    List<String> findByType();
+    Optional<ProductEntity> findByProductType(String productType);
 }
