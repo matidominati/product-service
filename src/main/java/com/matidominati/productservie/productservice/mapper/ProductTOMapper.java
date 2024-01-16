@@ -1,6 +1,6 @@
 package com.matidominati.productservie.productservice.mapper;
 
-import com.matidominati.productservie.productservice.model.ProductTO;
+import com.matidominati.productservie.productservice.model.dto.ProductTO;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
