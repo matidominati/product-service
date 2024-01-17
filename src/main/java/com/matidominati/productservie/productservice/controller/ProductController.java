@@ -1,6 +1,7 @@
 package com.matidominati.productservie.productservice.controller;
 
 import com.matidominati.productservie.productservice.model.dto.ProductTO;
+import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +20,14 @@ public class ProductController {
         return productService.getAll();
     }
 
-    @GetMapping("/type/{productType}")
+    @GetMapping("/{productType}")
     public List<ProductTO> getByType(@PathVariable String productType) {
         return productService.getByType(productType);
     }
 
     @GetMapping("/{id}")
     public ProductTO getById(@PathVariable Long id) {
-        return productService.getBaseProductById(id);
+        return productService.getById(id);
     }
 
     @GetMapping("/types")
@@ -34,25 +35,25 @@ public class ProductController {
         return productService.getAvailableTypes();
     }
 
-    @PostMapping("/create")
-    public ProductTO create(@RequestBody ProductTO product) {
+    @PostMapping
+    public ProductTO create(@RequestBody ProductEntity product) {
         return productService.create(product);
     }
 
     @PostMapping("/customize/{baseProductId}")
     public ProductTO customize(@PathVariable Long baseProductId,
-                               @RequestParam(required = false) List<Long> selectedConfigurations,
+                               @RequestParam(required = false) List<Long> selectedConfigurationIds,
                                @RequestParam(required = false) List<Long> selectedAccessories) {
-        return productService.customizeProduct(baseProductId, selectedConfigurations, selectedAccessories);
+        return productService.customize(baseProductId, selectedConfigurationIds, selectedAccessories);
     }
 
-    @DeleteMapping("/delete/{productId}")
+    @DeleteMapping("/{productId}")
     public void deleteProduct(@PathVariable Long productId) {
         productService.delete(productId);
     }
 
-    @PutMapping("/update/{productId}")
-    public ProductTO update(@PathVariable Long productId, @RequestBody ProductTO product) {
-        return productService.update(productId, product);
-    }
+//    @PutMapping("/{productId}")
+//    public ProductTO update(@PathVariable Long productId, @RequestBody ProductTO product) {
+//        return productService.update(productId, product);
+//    }
 }

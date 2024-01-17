@@ -1,31 +1,33 @@
 package com.matidominati.productservie.productservice.service;
 
+import com.matidominati.productservie.productservice.exception.ConfigurationAlreadyExistsException;
 import com.matidominati.productservie.productservice.exception.DataNotFoundException;
 import com.matidominati.productservie.productservice.mapper.ProductTOMapper;
 import com.matidominati.productservie.productservice.model.dto.ProductTO;
-import com.matidominati.productservie.productservice.model.entity.ProductAccessoryEntity;
-import com.matidominati.productservie.productservice.model.entity.ProductConfigurationEntity;
+import com.matidominati.productservie.productservice.model.entity.AccessoryEntity;
+import com.matidominati.productservie.productservice.model.entity.ConfigurationEntity;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
-import com.matidominati.productservie.productservice.repository.ProductAccessoryRepository;
-import com.matidominati.productservie.productservice.repository.ProductConfigurationRepository;
+import com.matidominati.productservie.productservice.repository.AccessoryRepository;
+import com.matidominati.productservie.productservice.repository.ConfigurationRepository;
 import com.matidominati.productservie.productservice.repository.ProductRepository;
-import com.matidominati.productservie.productservice.service.updater.ProductUpdater;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.matidominati.productservie.productservice.service.helper.ServiceHelper.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
-    private final ProductConfigurationRepository configurationRepository;
-    private final ProductAccessoryRepository accessoryRepository;
+    private final ConfigurationRepository configurationRepository;
+    private final AccessoryRepository accessoryRepository;
     private final ProductTOMapper mapper;
 
     public List<ProductTO> getAll() {
@@ -37,45 +39,22 @@ public class ProductService {
         return products;
     }
 
-    public ProductTO getBaseProductById(Long id) {
+    public ProductTO getById(Long id) {
         log.info("Search process for product with ID: {} has started", id);
-        ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Product not found"));
+        ProductEntity product = findByIdOrThrow(id, productRepository, ProductEntity.class);
         log.info("Product with ID: {} found", id);
         return mapper.map(product);
     }
 
-    public ProductTO customizeProduct(Long baseProductId, List<Long> selectedConfigurationIds, List<Long> selectedAccessoryIds) {
-        ProductEntity baseProduct = productRepository.findById(baseProductId)
-                .orElseThrow(() -> new DataNotFoundException("Product not found with id: " + baseProductId));
-
-        ProductEntity personalizedProduct = ProductEntity.builder()
-                .productName(baseProduct.getProductName())
-                .productType(baseProduct.getProductType())
-                .productDescription(baseProduct.getProductDescription())
-                .basePrice(baseProduct.getBasePrice())
-                .build();
-
-        if (selectedConfigurationIds != null && !selectedConfigurationIds.isEmpty()) {
-            selectedConfigurationIds.forEach(configurationId -> {
-                ProductConfigurationEntity selectedConfiguration = configurationRepository.findById(configurationId)
-                        .orElseThrow(() -> new DataNotFoundException("Configuration not found for ID: " + configurationId));
-                personalizedProduct.addConfiguration(selectedConfiguration);
-            });
-        }
-
-        if (selectedAccessoryIds != null && !selectedAccessoryIds.isEmpty()) {
-            selectedAccessoryIds.forEach(accessoryId -> {
-                ProductAccessoryEntity selectedAccessory = accessoryRepository.findById(accessoryId)
-                        .orElseThrow(() -> new DataNotFoundException("Accessory not found for ID: " + accessoryId));
-
-            });
-        }
-
-        log.info("Personalized {} with ID: {} has been created.", personalizedProduct.getProductType(), personalizedProduct.getId());
-        return mapper.map(personalizedProduct);
+    public ProductTO customize(Long baseProductId, List<Long> selectedConfigurationIds, List<Long> selectedAccessoryIds) {
+        ProductEntity baseProduct = findByIdOrThrow(baseProductId, productRepository, ProductEntity.class);
+        clearAccessoriesAndConfigurations(baseProduct);
+        addSelectedConfigurations(baseProduct, selectedConfigurationIds);
+        addSelectedAccessories(baseProduct, selectedAccessoryIds);
+        calculateAndSetTotalPrice(baseProduct);
+        log.info("Personalized {} with ID: {} has been created.", baseProduct.getProductType(), baseProduct.getId());
+        return mapper.map(baseProduct);
     }
-
 
     public List<ProductTO> getByType(String productType) {
         log.info("Process of searching for a products: {} has started", productType);
@@ -98,34 +77,21 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductTO create(ProductTO product) {
+    public ProductTO create(ProductEntity product) {
         ProductEntity newProduct = ProductEntity.create(product);
-        productRepository.save(newProduct);
         if (newProduct.getConfigurations() != null && !newProduct.getConfigurations().isEmpty()) {
-            newProduct.getConfigurations().forEach((key, configuration) -> {
-                ProductConfigurationEntity savedConfiguration = configurationRepository.save(configuration);
-                newProduct.addConfiguration(savedConfiguration);
-            });
+            newProduct.getConfigurations().forEach(configuration -> configuration.setProduct(newProduct));
+            newProduct.getConfigurations().forEach(configurationRepository::save);
         }
-        if (newProduct.getAccessories() != null && !newProduct.getAccessories().isEmpty()) {
-            newProduct.getAccessories().forEach((key, accessory) -> {
-                ProductAccessoryEntity savedAccessory = accessoryRepository.save(accessory);
-                newProduct.addAccessory(key, savedAccessory);
-            });
-        }
-        log.info("New {} with ID: {} has been created.", newProduct.getProductType(), newProduct.getId());
-        log.info("Accessories: {}", newProduct.getAccessories());
+        productRepository.save(newProduct);
         return mapper.map(newProduct);
     }
 
     @Transactional
     public void delete(Long id) {
-        Optional<ProductEntity> productToDelete = productRepository.findById(id);
-        if (productToDelete.isEmpty()) {
-            throw new DataNotFoundException("Product with given ID does not exist.");
-        }
-        productRepository.delete(productToDelete.get());
-        log.info("{} with ID: {} has ben deleted.", productToDelete.get().getProductType(), id);
+        ProductEntity productToDelete = findByIdOrThrow(id, productRepository, ProductEntity.class);
+        productRepository.delete(productToDelete);
+        log.info("{} with ID: {} has been deleted.", productToDelete.getProductType(), id);
     }
 
     @Transactional
@@ -133,10 +99,75 @@ public class ProductService {
         ProductEntity product = productRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Product with the provided ID does not exist."));
         log.info("Updating product with ID: {}", id);
-        ProductUpdater.updateProduct(product, updatedProduct.getProductName(), updatedProduct.getProductType(),
+        updateProduct(product, updatedProduct.getProductName(), updatedProduct.getProductType(),
                 updatedProduct.getProductDescription(), updatedProduct.getBasePrice());
+        if (updatedProduct.getConfigurations() != null && !updatedProduct.getConfigurations().isEmpty()
+                && !updatedProduct.getConfigurations().contains(updatedProduct.getConfigurations())) {
+            updatedProduct.getConfigurations().forEach(configurationRepository::save);
+        }
         productRepository.save(product);
         log.info("Product data has been updated.");
         return mapper.map(product);
     }
+
+    private BigDecimal calculateConfigurationsCost(List<ConfigurationEntity> configurations) {
+        BigDecimal configurationsCost = BigDecimal.ZERO;
+        for (ConfigurationEntity configuration : configurations) {
+            configurationsCost = configurationsCost.add(configuration.getConfigurationPrice());
+        }
+        return configurationsCost;
+    }
+
+    private BigDecimal calculateAccessoriesCost(List<AccessoryEntity> accessories) {
+        BigDecimal accessoriesCost = BigDecimal.ZERO;
+        for (AccessoryEntity accessory : accessories) {
+            accessoriesCost = accessoriesCost.add(accessory.getAccessoryPrice());
+        }
+        return accessoriesCost;
+    }
+
+    private void calculateAndSetTotalPrice(ProductEntity baseProduct) {
+        BigDecimal configurationsCost = calculateConfigurationsCost(baseProduct.getConfigurations());
+        BigDecimal accessoriesCost = calculateAccessoriesCost(baseProduct.getAccessories());
+        baseProduct.setTotalPrice(baseProduct.getBasePrice().add(configurationsCost).add(accessoriesCost));
+    }
+
+    private void addSelectedConfiguration(ProductEntity baseProduct, Long configurationId) {
+        boolean configurationIdExists = baseProduct.getConfigurations().stream()
+                .anyMatch(configuration -> configuration.getConfigurationId().equals(configurationId));
+        if (!configurationIdExists) {
+            ConfigurationEntity selectedConfiguration = getConfigurationById(configurationId);
+            boolean configurationTypeExists = baseProduct.getConfigurations().stream()
+                    .anyMatch(configurationT -> configurationT.getConfigurationType().equals(selectedConfiguration.getConfigurationType()));
+            if (!configurationTypeExists) {
+                log.warn("Configuration conflict. Two configurations with the same types: {} were selected", selectedConfiguration.getConfigurationType());
+                throw new ConfigurationAlreadyExistsException("Configuration conflict. You can't choose two identical configuration types (" + selectedConfiguration.getConfigurationType() + ")");
+            }
+            baseProduct.getConfigurations().add(selectedConfiguration);
+        }
+    }
+
+    private ConfigurationEntity getConfigurationById(Long configurationId) {
+        return configurationRepository.findById(configurationId)
+                .orElseThrow(() -> new DataNotFoundException("Configuration not found for ID: " + configurationId));
+    }
+
+    private void addSelectedConfigurations(ProductEntity baseProduct, List<Long> selectedConfigurationIds) {
+        if (selectedConfigurationIds != null && !selectedConfigurationIds.isEmpty()) {
+            for (Long configurationId : selectedConfigurationIds) {
+                addSelectedConfiguration(baseProduct, configurationId);
+            }
+        }
+    }
+
+    private void addSelectedAccessories(ProductEntity baseProduct, List<Long> selectedAccessoryIds) {
+        for (Long accessoryId : selectedAccessoryIds) {
+            AccessoryEntity selectedAccessory = findByIdOrThrow(accessoryId, accessoryRepository, AccessoryEntity.class);
+            baseProduct.getAccessories().add(selectedAccessory);
+        }
+    }
 }
+
+
+
+

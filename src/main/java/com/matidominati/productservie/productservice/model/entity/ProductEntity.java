@@ -1,12 +1,10 @@
 package com.matidominati.productservie.productservice.model.entity;
 
-import com.matidominati.productservie.productservice.model.dto.ProductTO;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -24,19 +22,16 @@ public class ProductEntity {
     private String productType;
     private String productDescription;
     private BigDecimal basePrice;
+    @Transient
     private BigDecimal totalPrice;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "product_id")
-    @MapKeyColumn(name = "configuration_key")
-    private Map<String, ProductConfigurationEntity> configurations = new HashMap<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "product")
+    private List<ConfigurationEntity> configurations;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "product_id")
-    @MapKeyColumn(name = "accessory_key")
-    private Map<String, ProductAccessoryEntity> accessories = new HashMap<>();
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "product")
+    private List<AccessoryEntity> accessories;
 
-    public static ProductEntity create(ProductTO product) {
+    public static ProductEntity create(ProductEntity product) {
         return ProductEntity.builder()
                 .productName(product.getProductName())
                 .productType(product.getProductType())
@@ -45,13 +40,6 @@ public class ProductEntity {
                 .configurations(product.getConfigurations())
                 .accessories(product.getAccessories())
                 .build();
-    }
-
-    public void addConfiguration(ProductConfigurationEntity configuration) {
-        configurations.put(configuration.getKeyId(), configuration);
-    }
-    public void addAccessory(String key, ProductAccessoryEntity accessory) {
-        accessories.put(key, accessory);
     }
 
     @Override

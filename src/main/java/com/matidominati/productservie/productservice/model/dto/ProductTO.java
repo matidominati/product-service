@@ -1,11 +1,9 @@
 package com.matidominati.productservie.productservice.model.dto;
 
-import com.matidominati.productservie.productservice.model.entity.ProductAccessoryEntity;
-import com.matidominati.productservie.productservice.model.entity.ProductConfigurationEntity;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 
 @Data
 public class ProductTO {
@@ -15,6 +13,6 @@ public class ProductTO {
     private String productDescription;
     private BigDecimal basePrice;
     private BigDecimal totalPrice;
-    private Map<String, ProductAccessoryEntity> accessories;
-    private Map<String, ProductConfigurationEntity> configurations;
+    private List<AccessoryTO> accessories;
+    private List<ConfigurationTO> configurations;
 }
