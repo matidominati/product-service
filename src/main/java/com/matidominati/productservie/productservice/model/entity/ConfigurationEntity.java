@@ -36,6 +36,7 @@ public class ConfigurationEntity {
         ConfigurationEntity configuration = (ConfigurationEntity) o;
         return configurationId != null && Objects.equals(configurationId, configuration.configurationId);
     }
+
     @Override
     public int hashCode() {
         return Objects.hash();

@@ -1,6 +1,6 @@
 package com.matidominati.productservie.productservice.controller;
 
-import com.matidominati.productservie.productservice.model.dto.ProductTO;
+import com.matidominati.productservie.productservice.model.dto.ProductDTO;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.service.ProductService;
 import jakarta.validation.Valid;
@@ -18,7 +18,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public List<ProductTO> getAll(@RequestParam(required = false) String type) {
+    public List<ProductDTO> getAll(@RequestParam(required = false) String type) {
         if (StringUtils.hasText(type)) {
             return productService.getByType(type);
         }
@@ -26,7 +26,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ProductTO getById(@PathVariable Long id) {
+    public ProductDTO getById(@PathVariable Long id) {
         return productService.getById(id);
     }
 
@@ -36,14 +36,14 @@ public class ProductController {
     }
 
     @PostMapping
-    public ProductTO create(@Valid @RequestBody ProductEntity product) {
+    public ProductDTO create(@Valid @RequestBody ProductEntity product) {
         return productService.create(product);
     }
 
     @PostMapping("/customize/{baseProductId}")
-    public ProductTO customize(@PathVariable Long baseProductId,
-                               @RequestParam(required = false, defaultValue = "") List<Long> selectedConfigurationIds,
-                               @RequestParam(required = false, defaultValue = "") List<Long> selectedAccessoryIds) {
+    public ProductDTO customize(@PathVariable Long baseProductId,
+                                @RequestParam(required = false, defaultValue = "") List<Long> selectedConfigurationIds,
+                                @RequestParam(required = false, defaultValue = "") List<Long> selectedAccessoryIds) {
         return productService.customize(baseProductId, selectedConfigurationIds, selectedAccessoryIds);
     }
 
@@ -53,7 +53,7 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
-    public ProductTO update(@PathVariable Long productId, @Valid @RequestBody ProductEntity product) {
+    public ProductDTO update(@PathVariable Long productId, @Valid @RequestBody ProductEntity product) {
         return productService.update(productId, product);
     }
 }

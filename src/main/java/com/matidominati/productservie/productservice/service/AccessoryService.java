@@ -1,8 +1,7 @@
 package com.matidominati.productservie.productservice.service;
 
-import com.matidominati.productservie.productservice.mapper.AccessoryTOMapper;
-import com.matidominati.productservie.productservice.model.dto.AccessoryTO;
-import com.matidominati.productservie.productservice.model.dto.ProductTO;
+import com.matidominati.productservie.productservice.mapper.AccessoryMapper;
+import com.matidominati.productservie.productservice.model.dto.AccessoryDTO;
 import com.matidominati.productservie.productservice.model.entity.AccessoryEntity;
 import com.matidominati.productservie.productservice.repository.AccessoryRepository;
 import jakarta.transaction.Transactional;
@@ -21,27 +20,27 @@ import static com.matidominati.productservie.productservice.service.helper.Servi
 @Slf4j
 public class AccessoryService {
     private final AccessoryRepository accessoryRepository;
-    private final AccessoryTOMapper mapper;
+    private final AccessoryMapper mapper;
 
-    public List<AccessoryTO> getAll() {
+    public List<AccessoryDTO> getAll() {
         log.info("Search process for all accessories has started");
-        List<AccessoryTO> accessories = accessoryRepository.findAll().stream()
+        List<AccessoryDTO> accessories = accessoryRepository.findAll().stream()
                 .map(mapper::map)
                 .toList();
         log.info("{} accessories found", accessories.size());
         return accessories;
     }
 
-    public AccessoryTO getById(Long id) {
+    public AccessoryDTO getById(Long id) {
         log.info("Search process for accessory with ID: {} has started", id);
         AccessoryEntity accessory = findByIdOrThrow(id, accessoryRepository, AccessoryEntity.class);
         log.info("Accessory with ID: {} found", id);
         return mapper.map(accessory);
     }
 
-    public List<AccessoryTO> getByType(String accessoryType) {
+    public List<AccessoryDTO> getByType(String accessoryType) {
         log.info("Process of searching for an accessory: {} has started", accessoryType);
-        List<AccessoryTO> products = accessoryRepository.findByAccessoryType(accessoryType).stream()
+        List<AccessoryDTO> products = accessoryRepository.findByAccessoryType(accessoryType).stream()
                 .map(mapper::map)
                 .toList();
         log.info("{} accessories found", products.size());
@@ -60,7 +59,7 @@ public class AccessoryService {
     }
 
     @Transactional
-    public AccessoryTO create(AccessoryEntity accessory) {
+    public AccessoryDTO create(AccessoryEntity accessory) {
         AccessoryEntity newAccessory = AccessoryEntity.create(accessory);
         accessoryRepository.save(newAccessory);
         return mapper.map(newAccessory);
@@ -74,7 +73,7 @@ public class AccessoryService {
     }
 
     @Transactional
-    public AccessoryTO update(Long id, AccessoryTO updatedAccessory) {
+    public AccessoryDTO update(Long id, AccessoryDTO updatedAccessory) {
         AccessoryEntity accessory = findByIdOrThrow(id, accessoryRepository, AccessoryEntity.class);
         log.info("Updating accessory with ID: {}", id);
         updateAccessory(accessory, updatedAccessory.getAccessoryName(), updatedAccessory.getAccessoryType(), updatedAccessory.getAccessoryPrice());

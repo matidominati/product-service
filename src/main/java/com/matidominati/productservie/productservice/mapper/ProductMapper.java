@@ -1,15 +1,14 @@
 package com.matidominati.productservie.productservice.mapper;
 
-import com.matidominati.productservie.productservice.model.dto.ProductTO;
+import com.matidominati.productservie.productservice.model.dto.ProductDTO;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
-        uses = {ConfigurationTOMapper.class, AccessoryTOMapper.class},
+        uses = {ConfigurationMapper.class, AccessoryMapper.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface ProductTOMapper {
+public interface ProductMapper {
 
-    ProductTO map(ProductEntity productEntity);
-//    ProductEntity map(ProductTO productTO);
+    ProductDTO map(ProductEntity productEntity);
 }

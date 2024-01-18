@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class ConfigurationTO {
+public class ConfigurationDTO {
 
     private Long configurationId;
     private String configurationValue;

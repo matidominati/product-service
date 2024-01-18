@@ -33,7 +33,6 @@ public class AccessoryEntity {
     public static AccessoryEntity create(AccessoryEntity accessory) {
         return AccessoryEntity.builder()
                 .accessoryName(accessory.getAccessoryName())
-                .accessoryType(accessory.getAccessoryName())
                 .accessoryPrice(accessory.getAccessoryPrice())
                 .accessoryType(accessory.getAccessoryType())
                 .build();

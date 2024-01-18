@@ -2,8 +2,8 @@ package com.matidominati.productservie.productservice.service;
 
 import com.matidominati.productservie.productservice.exception.ConfigurationAlreadyExistsException;
 import com.matidominati.productservie.productservice.exception.DataNotFoundException;
-import com.matidominati.productservie.productservice.mapper.ProductTOMapper;
-import com.matidominati.productservie.productservice.model.dto.ProductTO;
+import com.matidominati.productservie.productservice.mapper.ProductMapper;
+import com.matidominati.productservie.productservice.model.dto.ProductDTO;
 import com.matidominati.productservie.productservice.model.entity.AccessoryEntity;
 import com.matidominati.productservie.productservice.model.entity.ConfigurationEntity;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
@@ -29,37 +29,27 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ConfigurationRepository configurationRepository;
     private final AccessoryRepository accessoryRepository;
-    private final ProductTOMapper mapper;
+    private final ProductMapper mapper;
 
-    public List<ProductTO> getAll() {
+    public List<ProductDTO> getAll() {
         log.info("Search process for all products has started");
-        List<ProductTO> products = productRepository.findAll().stream()
+        List<ProductDTO> products = productRepository.findAll().stream()
                 .map(mapper::map)
                 .toList();
         log.info("{} products found", products.size());
         return products;
     }
 
-    public ProductTO getById(Long id) {
+    public ProductDTO getById(Long id) {
         log.info("Search process for product with ID: {} has started", id);
         ProductEntity product = findByIdOrThrow(id, productRepository, ProductEntity.class);
         log.info("Product with ID: {} found", id);
         return mapper.map(product);
     }
 
-    public ProductTO customize(Long baseProductId, List<Long> selectedConfigurationIds, List<Long> selectedAccessoryIds) {
-        ProductEntity baseProduct = findByIdOrThrow(baseProductId, productRepository, ProductEntity.class);
-        clearAccessoriesAndConfigurations(baseProduct);
-        addSelectedConfigurations(baseProduct, selectedConfigurationIds);
-        addSelectedAccessories(baseProduct, selectedAccessoryIds);
-        calculateAndSetTotalPrice(baseProduct);
-        log.info("Personalized {} with ID: {} has been created.", baseProduct.getProductType(), baseProduct.getId());
-        return mapper.map(baseProduct);
-    }
-
-    public List<ProductTO> getByType(String productType) {
+    public List<ProductDTO> getByType(String productType) {
         log.info("Process of searching for a products: {} has started", productType);
-        List<ProductTO> products = productRepository.findByProductType(productType).stream()
+        List<ProductDTO> products = productRepository.findByProductType(productType).stream()
                 .map(mapper::map)
                 .toList();
         log.info("{} products found", products.size());
@@ -77,8 +67,17 @@ public class ProductService {
         return availableTypes;
     }
 
+    public ProductDTO customize(Long baseProductId, List<Long> selectedConfigurationIds, List<Long> selectedAccessoryIds) {
+        ProductEntity baseProduct = findByIdOrThrow(baseProductId, productRepository, ProductEntity.class);
+        clearAccessoriesAndConfigurations(baseProduct);
+        addSelectedConfigurations(baseProduct, selectedConfigurationIds);
+        addSelectedAccessories(baseProduct, selectedAccessoryIds);
+        calculateAndSetTotalPrice(baseProduct);
+        log.info("Personalized {} with ID: {} has been created.", baseProduct.getProductType(), baseProduct.getId());
+        return mapper.map(baseProduct);
+    }
     @Transactional
-    public ProductTO create(ProductEntity product) {
+    public ProductDTO create(ProductEntity product) {
         ProductEntity newProduct = ProductEntity.create(product);
         if (newProduct.getConfigurations() != null && !newProduct.getConfigurations().isEmpty()) {
             newProduct.getConfigurations().forEach(configuration -> configuration.setProduct(newProduct));
@@ -96,7 +95,7 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductTO update(Long id, ProductEntity updatedProduct) {
+    public ProductDTO update(Long id, ProductEntity updatedProduct) {
         ProductEntity product = findByIdOrThrow(id, productRepository, ProductEntity.class);
         log.info("Updating product with ID: {}", id);
         updateProduct(product, updatedProduct.getProductName(), updatedProduct.getProductType(),
