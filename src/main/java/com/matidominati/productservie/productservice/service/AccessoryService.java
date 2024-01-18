@@ -2,6 +2,7 @@ package com.matidominati.productservie.productservice.service;
 
 import com.matidominati.productservie.productservice.mapper.AccessoryTOMapper;
 import com.matidominati.productservie.productservice.model.dto.AccessoryTO;
+import com.matidominati.productservie.productservice.model.dto.ProductTO;
 import com.matidominati.productservie.productservice.model.entity.AccessoryEntity;
 import com.matidominati.productservie.productservice.repository.AccessoryRepository;
 import jakarta.transaction.Transactional;
@@ -10,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.matidominati.productservie.productservice.service.helper.ServiceHelper.findByIdOrThrow;
 import static com.matidominati.productservie.productservice.service.helper.ServiceHelper.updateAccessory;
@@ -35,6 +37,26 @@ public class AccessoryService {
         AccessoryEntity accessory = findByIdOrThrow(id, accessoryRepository, AccessoryEntity.class);
         log.info("Accessory with ID: {} found", id);
         return mapper.map(accessory);
+    }
+
+    public List<AccessoryTO> getByType(String accessoryType) {
+        log.info("Process of searching for an accessory: {} has started", accessoryType);
+        List<AccessoryTO> products = accessoryRepository.findByAccessoryType(accessoryType).stream()
+                .map(mapper::map)
+                .toList();
+        log.info("{} accessories found", products.size());
+        return products;
+    }
+
+    public List<String> getAvailableTypes() {
+        log.info("Fetching available accessory types");
+        List<String> availableTypes = accessoryRepository.findAll()
+                .stream()
+                .map(accessoryEntity -> accessoryEntity.getAccessoryType())
+                .distinct()
+                .collect(Collectors.toList());
+        log.info("{} accessory types found", availableTypes.size());
+        return availableTypes;
     }
 
     @Transactional

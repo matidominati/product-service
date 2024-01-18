@@ -1,6 +1,9 @@
 package com.matidominati.productservie.productservice.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -16,8 +19,12 @@ public class AccessoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long accessoryId;
+    @NotBlank
     private String accessoryName;
+    @NotNull
+    @DecimalMin(value = "0.01")
     private BigDecimal accessoryPrice;
+    @NotBlank
     private String accessoryType;
     @ManyToOne
     @JoinColumn(name = "product_id")

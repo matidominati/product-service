@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.matidominati.productservie.productservice.service.helper.ServiceHelper.*;
@@ -95,15 +96,21 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductTO update(Long id, ProductTO updatedProduct) {
-        ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new DataNotFoundException("Product with the provided ID does not exist."));
+    public ProductTO update(Long id, ProductEntity updatedProduct) {
+        ProductEntity product = findByIdOrThrow(id, productRepository, ProductEntity.class);
         log.info("Updating product with ID: {}", id);
         updateProduct(product, updatedProduct.getProductName(), updatedProduct.getProductType(),
                 updatedProduct.getProductDescription(), updatedProduct.getBasePrice());
-        if (updatedProduct.getConfigurations() != null && !updatedProduct.getConfigurations().isEmpty()
-                && !updatedProduct.getConfigurations().contains(updatedProduct.getConfigurations())) {
-            updatedProduct.getConfigurations().forEach(configurationRepository::save);
+        if (updatedProduct.getConfigurations() != null && !updatedProduct.getConfigurations().isEmpty()) {
+            Set<Long> existingConfigurationIds = product.getConfigurations().stream()
+                    .map(ConfigurationEntity::getConfigurationId)
+                    .collect(Collectors.toSet());
+            for (ConfigurationEntity updatedConfiguration : updatedProduct.getConfigurations()) {
+                if (!existingConfigurationIds.contains(updatedConfiguration.getConfigurationId())) {
+                    updatedConfiguration.setProduct(product);
+                    configurationRepository.save(updatedConfiguration);
+                }
+            }
         }
         productRepository.save(product);
         log.info("Product data has been updated.");
@@ -139,7 +146,7 @@ public class ProductService {
             ConfigurationEntity selectedConfiguration = getConfigurationById(configurationId);
             boolean configurationTypeExists = baseProduct.getConfigurations().stream()
                     .anyMatch(configurationT -> configurationT.getConfigurationType().equals(selectedConfiguration.getConfigurationType()));
-            if (!configurationTypeExists) {
+            if (configurationTypeExists) {
                 log.warn("Configuration conflict. Two configurations with the same types: {} were selected", selectedConfiguration.getConfigurationType());
                 throw new ConfigurationAlreadyExistsException("Configuration conflict. You can't choose two identical configuration types (" + selectedConfiguration.getConfigurationType() + ")");
             }

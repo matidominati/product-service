@@ -1,6 +1,10 @@
 package com.matidominati.productservie.productservice.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -18,9 +22,13 @@ public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotBlank
     private String productName;
+    @NotBlank
     private String productType;
     private String productDescription;
+    @NotNull
+    @DecimalMin(value = "1.00")
     private BigDecimal basePrice;
     @Transient
     private BigDecimal totalPrice;

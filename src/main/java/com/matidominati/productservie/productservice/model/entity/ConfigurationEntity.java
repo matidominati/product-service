@@ -1,6 +1,7 @@
 package com.matidominati.productservie.productservice.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,8 +20,10 @@ public class ConfigurationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long configurationId;
+    @NotBlank
     private String configurationValue;
     private BigDecimal configurationPrice;
+    @NotBlank
     private String configurationType;
     @ManyToOne
     @JoinColumn(name = "product_id")

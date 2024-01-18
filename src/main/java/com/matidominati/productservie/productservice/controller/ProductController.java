@@ -3,26 +3,26 @@ package com.matidominati.productservie.productservice.controller;
 import com.matidominati.productservie.productservice.model.dto.ProductTO;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/products")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
 
     @GetMapping
-    public List<ProductTO> getAll() {
+    public List<ProductTO> getAll(@RequestParam(required = false) String type) {
+        if (StringUtils.hasText(type)) {
+            return productService.getByType(type);
+        }
         return productService.getAll();
-    }
-
-    @GetMapping("/{productType}")
-    public List<ProductTO> getByType(@PathVariable String productType) {
-        return productService.getByType(productType);
     }
 
     @GetMapping("/{id}")
@@ -36,15 +36,15 @@ public class ProductController {
     }
 
     @PostMapping
-    public ProductTO create(@RequestBody ProductEntity product) {
+    public ProductTO create(@Valid @RequestBody ProductEntity product) {
         return productService.create(product);
     }
 
     @PostMapping("/customize/{baseProductId}")
     public ProductTO customize(@PathVariable Long baseProductId,
-                               @RequestParam(required = false) List<Long> selectedConfigurationIds,
-                               @RequestParam(required = false) List<Long> selectedAccessories) {
-        return productService.customize(baseProductId, selectedConfigurationIds, selectedAccessories);
+                               @RequestParam(required = false, defaultValue = "") List<Long> selectedConfigurationIds,
+                               @RequestParam(required = false, defaultValue = "") List<Long> selectedAccessoryIds) {
+        return productService.customize(baseProductId, selectedConfigurationIds, selectedAccessoryIds);
     }
 
     @DeleteMapping("/{productId}")
@@ -52,8 +52,8 @@ public class ProductController {
         productService.delete(productId);
     }
 
-//    @PutMapping("/{productId}")
-//    public ProductTO update(@PathVariable Long productId, @RequestBody ProductTO product) {
-//        return productService.update(productId, product);
-//    }
+    @PutMapping("/{productId}")
+    public ProductTO update(@PathVariable Long productId, @Valid @RequestBody ProductEntity product) {
+        return productService.update(productId, product);
+    }
 }
