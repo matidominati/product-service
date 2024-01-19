@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.matidominati.productservie.productservice.utils.CostUtils.*;
 import static com.matidominati.productservie.productservice.utils.ProductUtils.*;
 import static com.matidominati.productservie.productservice.utils.RepositoryUtils.findByIdOrThrow;
 
@@ -69,7 +70,7 @@ public class ProductService {
         clearAccessoriesAndConfigurations(baseProduct);
         addSelectedConfigurations(baseProduct, selectedConfigurationIds, configurationRepository);
         addSelectedAccessories(baseProduct, selectedAccessoryIds, accessoryRepository);
-        CostUtils.calculateAndSetTotalPrice(baseProduct);
+        calculateAndSetTotalPrice(baseProduct);
         log.info("Personalized {} with ID: {} has been created.", baseProduct.getProductType(), baseProduct.getId());
         return mapper.map(baseProduct);
     }
