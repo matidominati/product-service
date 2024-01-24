@@ -36,11 +36,11 @@ public class ProductController {
         return productService.create(product);
     }
 
-    @PostMapping("/customize/{baseProductId}")
-    public ProductDTO customize(@PathVariable Long baseProductId,
+    @PostMapping("/{productId}/customize")
+    public ProductDTO customize(@PathVariable Long productId,
                                 @RequestParam(required = false, defaultValue = "") List<Long> selectedConfigurationIds,
                                 @RequestParam(required = false, defaultValue = "") List<Long> selectedAccessoryIds) {
-        return productService.customize(baseProductId, selectedConfigurationIds, selectedAccessoryIds);
+        return productService.customize(productId, selectedConfigurationIds, selectedAccessoryIds);
     }
 
     @DeleteMapping("/{productId}")
