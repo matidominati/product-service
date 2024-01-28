@@ -5,7 +5,6 @@ import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,11 +17,8 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public List<ProductDTO> getAll(@RequestParam(required = false) String type) {
-        if (StringUtils.hasText(type)) {
-            return productService.getByType(type);
-        }
-        return productService.getAll();
+    public List<ProductDTO> getProducts(@RequestParam(required = false) String type) {
+        return productService.getProducts(type);
     }
 
     @GetMapping("/{id}")
@@ -40,11 +36,11 @@ public class ProductController {
         return productService.create(product);
     }
 
-    @PostMapping("/customize/{baseProductId}")
-    public ProductDTO customize(@PathVariable Long baseProductId,
+    @PostMapping("/{productId}/customize")
+    public ProductDTO customize(@PathVariable Long productId,
                                 @RequestParam(required = false, defaultValue = "") List<Long> selectedConfigurationIds,
                                 @RequestParam(required = false, defaultValue = "") List<Long> selectedAccessoryIds) {
-        return productService.customize(baseProductId, selectedConfigurationIds, selectedAccessoryIds);
+        return productService.customize(productId, selectedConfigurationIds, selectedAccessoryIds);
     }
 
     @DeleteMapping("/{productId}")

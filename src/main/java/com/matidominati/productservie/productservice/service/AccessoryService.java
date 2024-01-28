@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.matidominati.productservie.productservice.service.helper.ServiceHelper.findByIdOrThrow;
-import static com.matidominati.productservie.productservice.service.helper.ServiceHelper.updateAccessory;
+import static com.matidominati.productservie.productservice.utils.AccessoryUtils.updateAccessory;
+import static com.matidominati.productservie.productservice.utils.RepositoryUtils.findByIdOrThrow;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +22,17 @@ public class AccessoryService {
     private final AccessoryRepository accessoryRepository;
     private final AccessoryMapper mapper;
 
-    public List<AccessoryDTO> getAll() {
-        log.info("Search process for all accessories has started");
-        List<AccessoryDTO> accessories = accessoryRepository.findAll().stream()
+    public List<AccessoryDTO> getAccessories(String accessoryType) {
+        if (accessoryType == null) {
+            log.info("Search process for all accessories has started");
+            List<AccessoryDTO> accessories = accessoryRepository.findAll().stream()
+                    .map(mapper::map)
+                    .toList();
+            log.info("{} accessories found", accessories.size());
+            return accessories;
+        }
+        log.info("Process of searching for an accessory: {} has started", accessoryType);
+        List<AccessoryDTO> accessories = accessoryRepository.findByAccessoryType(accessoryType).stream()
                 .map(mapper::map)
                 .toList();
         log.info("{} accessories found", accessories.size());
@@ -38,14 +46,6 @@ public class AccessoryService {
         return mapper.map(accessory);
     }
 
-    public List<AccessoryDTO> getByType(String accessoryType) {
-        log.info("Process of searching for an accessory: {} has started", accessoryType);
-        List<AccessoryDTO> products = accessoryRepository.findByAccessoryType(accessoryType).stream()
-                .map(mapper::map)
-                .toList();
-        log.info("{} accessories found", products.size());
-        return products;
-    }
 
     public List<String> getAvailableTypes() {
         log.info("Fetching available accessory types");

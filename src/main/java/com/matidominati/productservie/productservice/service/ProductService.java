@@ -1,26 +1,25 @@
 package com.matidominati.productservie.productservice.service;
 
-import com.matidominati.productservie.productservice.exception.ConfigurationAlreadyExistsException;
-import com.matidominati.productservie.productservice.exception.DataNotFoundException;
 import com.matidominati.productservie.productservice.mapper.ProductMapper;
 import com.matidominati.productservie.productservice.model.dto.ProductDTO;
-import com.matidominati.productservie.productservice.model.entity.AccessoryEntity;
 import com.matidominati.productservie.productservice.model.entity.ConfigurationEntity;
 import com.matidominati.productservie.productservice.model.entity.ProductEntity;
 import com.matidominati.productservie.productservice.repository.AccessoryRepository;
 import com.matidominati.productservie.productservice.repository.ConfigurationRepository;
 import com.matidominati.productservie.productservice.repository.ProductRepository;
+import com.matidominati.productservie.productservice.utils.CostUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.matidominati.productservie.productservice.service.helper.ServiceHelper.*;
+import static com.matidominati.productservie.productservice.utils.CostUtils.*;
+import static com.matidominati.productservie.productservice.utils.ProductUtils.*;
+import static com.matidominati.productservie.productservice.utils.RepositoryUtils.findByIdOrThrow;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +30,17 @@ public class ProductService {
     private final AccessoryRepository accessoryRepository;
     private final ProductMapper mapper;
 
-    public List<ProductDTO> getAll() {
-        log.info("Search process for all products has started");
-        List<ProductDTO> products = productRepository.findAll().stream()
+    public List<ProductDTO> getProducts(String productType) {
+        if (productType == null) {
+            log.info("Search process for all products has started");
+            List<ProductDTO> products = productRepository.findAll().stream()
+                    .map(mapper::map)
+                    .toList();
+            log.info("{} products found", products.size());
+            return products;
+        }
+        log.info("Process of searching for a products: {} has started", productType);
+        List<ProductDTO> products = productRepository.findByProductType(productType).stream()
                 .map(mapper::map)
                 .toList();
         log.info("{} products found", products.size());
@@ -45,15 +52,6 @@ public class ProductService {
         ProductEntity product = findByIdOrThrow(id, productRepository, ProductEntity.class);
         log.info("Product with ID: {} found", id);
         return mapper.map(product);
-    }
-
-    public List<ProductDTO> getByType(String productType) {
-        log.info("Process of searching for a products: {} has started", productType);
-        List<ProductDTO> products = productRepository.findByProductType(productType).stream()
-                .map(mapper::map)
-                .toList();
-        log.info("{} products found", products.size());
-        return products;
     }
 
     public List<String> getAvailableTypes() {
@@ -70,12 +68,13 @@ public class ProductService {
     public ProductDTO customize(Long baseProductId, List<Long> selectedConfigurationIds, List<Long> selectedAccessoryIds) {
         ProductEntity baseProduct = findByIdOrThrow(baseProductId, productRepository, ProductEntity.class);
         clearAccessoriesAndConfigurations(baseProduct);
-        addSelectedConfigurations(baseProduct, selectedConfigurationIds);
-        addSelectedAccessories(baseProduct, selectedAccessoryIds);
+        addSelectedConfigurations(baseProduct, selectedConfigurationIds, configurationRepository);
+        addSelectedAccessories(baseProduct, selectedAccessoryIds, accessoryRepository);
         calculateAndSetTotalPrice(baseProduct);
         log.info("Personalized {} with ID: {} has been created.", baseProduct.getProductType(), baseProduct.getId());
         return mapper.map(baseProduct);
     }
+
     @Transactional
     public ProductDTO create(ProductEntity product) {
         ProductEntity newProduct = ProductEntity.create(product);
@@ -116,62 +115,6 @@ public class ProductService {
         return mapper.map(product);
     }
 
-    private BigDecimal calculateConfigurationsCost(List<ConfigurationEntity> configurations) {
-        BigDecimal configurationsCost = BigDecimal.ZERO;
-        for (ConfigurationEntity configuration : configurations) {
-            configurationsCost = configurationsCost.add(configuration.getConfigurationPrice());
-        }
-        return configurationsCost;
-    }
-
-    private BigDecimal calculateAccessoriesCost(List<AccessoryEntity> accessories) {
-        BigDecimal accessoriesCost = BigDecimal.ZERO;
-        for (AccessoryEntity accessory : accessories) {
-            accessoriesCost = accessoriesCost.add(accessory.getAccessoryPrice());
-        }
-        return accessoriesCost;
-    }
-
-    private void calculateAndSetTotalPrice(ProductEntity baseProduct) {
-        BigDecimal configurationsCost = calculateConfigurationsCost(baseProduct.getConfigurations());
-        BigDecimal accessoriesCost = calculateAccessoriesCost(baseProduct.getAccessories());
-        baseProduct.setTotalPrice(baseProduct.getBasePrice().add(configurationsCost).add(accessoriesCost));
-    }
-
-    private void addSelectedConfiguration(ProductEntity baseProduct, Long configurationId) {
-        boolean configurationIdExists = baseProduct.getConfigurations().stream()
-                .anyMatch(configuration -> configuration.getConfigurationId().equals(configurationId));
-        if (!configurationIdExists) {
-            ConfigurationEntity selectedConfiguration = getConfigurationById(configurationId);
-            boolean configurationTypeExists = baseProduct.getConfigurations().stream()
-                    .anyMatch(configurationT -> configurationT.getConfigurationType().equals(selectedConfiguration.getConfigurationType()));
-            if (configurationTypeExists) {
-                log.warn("Configuration conflict. Two configurations with the same types: {} were selected", selectedConfiguration.getConfigurationType());
-                throw new ConfigurationAlreadyExistsException("Configuration conflict. You can't choose two identical configuration types (" + selectedConfiguration.getConfigurationType() + ")");
-            }
-            baseProduct.getConfigurations().add(selectedConfiguration);
-        }
-    }
-
-    private ConfigurationEntity getConfigurationById(Long configurationId) {
-        return configurationRepository.findById(configurationId)
-                .orElseThrow(() -> new DataNotFoundException("Configuration not found for ID: " + configurationId));
-    }
-
-    private void addSelectedConfigurations(ProductEntity baseProduct, List<Long> selectedConfigurationIds) {
-        if (selectedConfigurationIds != null && !selectedConfigurationIds.isEmpty()) {
-            for (Long configurationId : selectedConfigurationIds) {
-                addSelectedConfiguration(baseProduct, configurationId);
-            }
-        }
-    }
-
-    private void addSelectedAccessories(ProductEntity baseProduct, List<Long> selectedAccessoryIds) {
-        for (Long accessoryId : selectedAccessoryIds) {
-            AccessoryEntity selectedAccessory = findByIdOrThrow(accessoryId, accessoryRepository, AccessoryEntity.class);
-            baseProduct.getAccessories().add(selectedAccessory);
-        }
-    }
 }
 
 

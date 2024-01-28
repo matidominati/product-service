@@ -5,7 +5,6 @@ import com.matidominati.productservie.productservice.model.entity.AccessoryEntit
 import com.matidominati.productservie.productservice.service.AccessoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,11 +22,8 @@ public class AccessoryController {
     }
 
     @GetMapping
-    public List<AccessoryDTO> getAll(@RequestParam(required = false) String type) {
-        if (StringUtils.hasText(type)) {
-            return accessoryService.getByType(type);
-        }
-        return accessoryService.getAll();
+    public List<AccessoryDTO> getAccessories(@RequestParam(required = false) String type) {
+        return accessoryService.getAccessories(type);
     }
 
     @GetMapping("/types")
